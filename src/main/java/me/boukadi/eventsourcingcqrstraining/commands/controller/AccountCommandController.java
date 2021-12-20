@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.ws.Response;
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -40,7 +41,8 @@ public class AccountCommandController {
         CompletableFuture<String> commandResponse = commandGateway.send(new CreditAccountCommand(
                 requestDTO.getAccountID(),
                 requestDTO.getAmount(),
-                requestDTO.getCurrency()
+                requestDTO.getCurrency(),
+                new Date()
         ));
         return commandResponse;
     }
@@ -50,7 +52,8 @@ public class AccountCommandController {
         CompletableFuture<String> commandResponse = commandGateway.send(new DebitAccountCommand(
                 requestDTO.getAccountID(),
                 requestDTO.getAmount(),
-                requestDTO.getCurrency()
+                requestDTO.getCurrency(),
+                new Date()
         ));
         return commandResponse;
     }

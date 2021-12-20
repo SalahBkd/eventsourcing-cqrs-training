@@ -39,8 +39,8 @@ public class AccountAggregate {
                 // we transfer Command data to the Event, and Axon will take care of persisting data in Event Store because he receives an Event
                 createAccountCommand.getId(),
                 createAccountCommand.getInitialBalance(),
-                createAccountCommand.getCurrency()
-        ));
+                createAccountCommand.getCurrency(),
+                AccountStatus.CREATED));
     }
 
     // Evolution Function, when AccountCreatedEvent is emitted this handler executes, doesn't deal with business logic, it changes the app state
@@ -72,7 +72,8 @@ public class AccountAggregate {
         AggregateLifecycle.apply(new AccountCreditedEvent(
                 creditAccountCommand.getId(),
                 creditAccountCommand.getAmount(),
-                creditAccountCommand.getCurrency()
+                creditAccountCommand.getCurrency(),
+                creditAccountCommand.getDate()
         ));
     }
 
@@ -90,7 +91,8 @@ public class AccountAggregate {
         AggregateLifecycle.apply(new AccountDebitedEvent(
                 debitAccountCommand.getId(),
                 debitAccountCommand.getAmount(),
-                debitAccountCommand.getCurrency()
+                debitAccountCommand.getCurrency(),
+                debitAccountCommand.getDate()
         ));
     }
 
