@@ -2,7 +2,11 @@ package me.boukadi.eventsourcingcqrstraining.commands.controller;
 
 import lombok.AllArgsConstructor;
 import me.boukadi.eventsourcingcqrstraining.commonapi.commands.CreateAccountCommand;
+import me.boukadi.eventsourcingcqrstraining.commonapi.commands.CreditAccountCommand;
+import me.boukadi.eventsourcingcqrstraining.commonapi.commands.DebitAccountCommand;
 import me.boukadi.eventsourcingcqrstraining.commonapi.dto.CreateAccountRequestDTO;
+import me.boukadi.eventsourcingcqrstraining.commonapi.dto.CreditAccountRequestDTO;
+import me.boukadi.eventsourcingcqrstraining.commonapi.dto.DebitAccountRequestDTO;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.eventsourcing.eventstore.EventStore;
 import org.springframework.http.HttpStatus;
@@ -26,6 +30,26 @@ public class AccountCommandController {
         CompletableFuture<String> commandResponse = commandGateway.send(new CreateAccountCommand(
                 UUID.randomUUID().toString(),
                 requestDTO.getInitialBalance(),
+                requestDTO.getCurrency()
+        ));
+        return commandResponse;
+    }
+
+    @PutMapping(path = "/credit")
+    public CompletableFuture<String> creditAccount(@RequestBody CreditAccountRequestDTO requestDTO) {
+        CompletableFuture<String> commandResponse = commandGateway.send(new CreditAccountCommand(
+                requestDTO.getAccountID(),
+                requestDTO.getAmount(),
+                requestDTO.getCurrency()
+        ));
+        return commandResponse;
+    }
+
+    @PutMapping(path = "/debit")
+    public CompletableFuture<String> debitAccount(@RequestBody DebitAccountRequestDTO requestDTO) {
+        CompletableFuture<String> commandResponse = commandGateway.send(new DebitAccountCommand(
+                requestDTO.getAccountID(),
+                requestDTO.getAmount(),
                 requestDTO.getCurrency()
         ));
         return commandResponse;

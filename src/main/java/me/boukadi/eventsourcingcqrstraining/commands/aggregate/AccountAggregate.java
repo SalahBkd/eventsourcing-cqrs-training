@@ -1,9 +1,15 @@
 package me.boukadi.eventsourcingcqrstraining.commands.aggregate;
 
 import me.boukadi.eventsourcingcqrstraining.commonapi.commands.CreateAccountCommand;
+import me.boukadi.eventsourcingcqrstraining.commonapi.commands.CreditAccountCommand;
+import me.boukadi.eventsourcingcqrstraining.commonapi.commands.DebitAccountCommand;
 import me.boukadi.eventsourcingcqrstraining.commonapi.enums.AccountStatus;
 import me.boukadi.eventsourcingcqrstraining.commonapi.events.AccountActivatedEvent;
 import me.boukadi.eventsourcingcqrstraining.commonapi.events.AccountCreatedEvent;
+import me.boukadi.eventsourcingcqrstraining.commonapi.events.AccountCreditedEvent;
+import me.boukadi.eventsourcingcqrstraining.commonapi.events.AccountDebitedEvent;
+import me.boukadi.eventsourcingcqrstraining.commonapi.exception.InsufficientBalanceException;
+import me.boukadi.eventsourcingcqrstraining.commonapi.exception.NegativeAmountException;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -57,6 +63,40 @@ public class AccountAggregate {
     @EventSourcingHandler
     public void on(AccountActivatedEvent event) {
         this.status = event.getStatus();
+    }
+
+    // CREDIT ACCOUNT
+    @CommandHandler // when the command is emitted in the command bus this method gets executed
+    public void handle(CreditAccountCommand creditAccountCommand) {
+        if(creditAccountCommand.getAmount() < 0) throw new NegativeAmountException("amount should not be lesser than 0");
+        AggregateLifecycle.apply(new AccountCreditedEvent(
+                creditAccountCommand.getId(),
+                creditAccountCommand.getAmount(),
+                creditAccountCommand.getCurrency()
+        ));
+    }
+
+    @EventSourcingHandler
+    public void on(AccountCreditedEvent accountCreditedEvent) {
+        this.balance += accountCreditedEvent.getAmount();
+    }
+
+
+    // DEBIT ACCOUNT
+    @CommandHandler // when the command is emitted in the command bus this method gets executed
+    public void handle(DebitAccountCommand debitAccountCommand) {
+        if(debitAccountCommand.getAmount() < 0) throw new NegativeAmountException("Amount should not be lesser than 0");
+        if(this.balance < debitAccountCommand.getAmount()) throw new InsufficientBalanceException("Insufficient Balance: " + balance + ", the amount is greater than the current account balance.");
+        AggregateLifecycle.apply(new AccountDebitedEvent(
+                debitAccountCommand.getId(),
+                debitAccountCommand.getAmount(),
+                debitAccountCommand.getCurrency()
+        ));
+    }
+
+    @EventSourcingHandler
+    public void on(AccountDebitedEvent accountDebitedEvent) {
+        this.balance -= accountDebitedEvent.getAmount();
     }
 
 
